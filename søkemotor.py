@@ -1,4 +1,11 @@
 import PySimpleGUI as sg
+import string
+
+
+#Funksjon for å lese teksten og fjerne tegnesetting
+def preprocess_text(text):
+    translator = str.maketrans('', '', string.punctuation)  #mappen som sletter disse symboler
+    return text.translate(translator)
 
 #Funksjon for å lese innhold fra en fil
 def lesInnTekst(filnavn):
@@ -8,16 +15,41 @@ def lesInnTekst(filnavn):
     except FileNotFoundError:
         return []  #Returnerer en tom liste hvis filen ikke finnes
 
-#Funksjon for å sjekke om et ord finnes i teksten
+# Funksjon for å sjekke om et ord finnes i teksten
 def finnOrd(ord):
-    ord_lower = ord.lower()  #Gjør søkeordet til små bokstaver
-    return any(ord_lower in linje.lower() for linje in tekst)  #Sjekker om ordet finnes i noen linje
+    global tekst  #Bruker global for å få tilgang til teksten
+    if not tekst:  #Sjekker om teksten er tom
+        filnavn = values.get("-FILE-")  #Henter filnavnet fra input-feltet
+        if filnavn:
+            tekst = lesInnTekst(filnavn)  #Prøver å laste teksten fra filen
+        if not tekst:  #Hvis teksten fortsatt er tom
+            return False  #Returnerer False fordi teksten ikke er lastet
 
-#Funksjon for å finne linje(r) som inneholder ordet
+    ord_lower = preprocess_text(ord.lower())  #Forbehandler søkeordet ved å gjøre det til små bokstaver og fjerne tegnsetting
+    return any(
+        ord_lower in [preprocess_text(word).lower() for word in linje.split()]  #Sjekker om ordet finnes i listen av ord i linjen
+        for linje in tekst  #Går gjennom hver linje i teksten
+    )
+
+
+# Funksjon for å finne linjer som inneholder ordet
 def finnLinje(ord):
-    ord_lower = ord.lower()  #Gjør søkeordet til små bokstaver
-    linjer = [f"Linje {i + 1}: {linje.strip()}" for i, linje in enumerate(tekst) if ord_lower in linje.lower()]
-    return "\n".join(linjer) if linjer else f"Ordet '{ord}' ble ikke funnet i noen linje."  #Returnerer linjer eller melding
+    global tekst  #Bruker global for å få tilgang til teksten
+    if not tekst:  #Sjekker om teksten er tom
+        filnavn = values.get("-FILE-")  #Henter filnavnet fra input-feltet
+        if filnavn:
+            tekst = lesInnTekst(filnavn)  #Prøver å laste teksten fra filen
+        if not tekst:  #Hvis teksten fortsatt er tom
+            return "Tekst er ikke lastet. Vennligst velg en fil og vis teksten først."
+
+    ord_lower = preprocess_text(ord.lower())  #Forbehandler søkeordet
+    linjer = [
+        f"Linje {i + 1}: {linje.strip()}"  #Formaterer linjene som inneholder ordet
+        for i, linje in enumerate(tekst)  #Går gjennom alle linjene i teksten
+        if ord_lower in [preprocess_text(word).lower() for word in linje.split()]  #Sjekker hvert ord i linjen
+    ]
+    return "\n".join(linjer) if linjer else f"Ordet '{ord}' ble ikke funnet i noen linje."
+
 
 def printOrd(ord):
     global tekst  #Bruker global for å oppdatere teksten hvis nødvendig
@@ -32,7 +64,7 @@ def printOrd(ord):
     resultater = []  #Liste for å lagre resultater
 
     for linje_nr, linje in enumerate(tekst, start=1):  #går gjennom linjer med linjenummer
-        ord_liste = linje.strip().split()  #Deler linjen inn i ord
+        ord_liste =  preprocess_text(linje).strip().split()   #Deler linjen inn i ord
         for indeks, hvert_ord in enumerate(ord_liste, start=1):  #går gjennom hvert ord med indeks
             if hvert_ord.lower() == ord_lower:  #Sjekker om ordet samsvarer
                 resultater.append(f"Linje {linje_nr}, ord {indeks}: {hvert_ord}")  #Legger til resultat
@@ -45,9 +77,24 @@ def printOrd(ord):
 
 #Funksjon for å telle antall ganger et ord dukker opp i teksten
 def tellOrd(ord):
-    ord_lower = ord.lower()  #Gjør søkeordet til små bokstaver
-    antall = sum(linje.lower().count(ord_lower) for linje in tekst)  #Teller antall forekomster
+    global tekst  #Får tilgang til den globale variabelen
+    if not tekst:  #Sjekker om teksten er tom
+        filnavn = values.get("-FILE-")  # Henter filnavnet fra input-feltet
+        if filnavn:
+            tekst = lesInnTekst(filnavn)  #Prøver å laste teksten fra filen
+        if not tekst:  #Hvis teksten fortsatt er tom
+            return "Tekst er ikke lastet. Vennligst velg en fil."
+
+    ord_lower = preprocess_text(ord.lower())  #Gjør søkeordet til små bokstaver og fjerner tegnsetting
+    antall = sum(
+        word.lower() == ord_lower  #Sjekker om ordet samsvarer nøyaktig
+        for linje in tekst  #Går gjennom hver linje
+        for word in preprocess_text(linje).split()  #Deler opp linjen i ord
+    )  #Teller antall forekomster
     return f"Ordet '{ord}' ble funnet {antall} ganger."  #Returnerer resultat
+
+
+
 
 #Funksjon for å validere søkeordet
 def sjekkerOrd(ord):
@@ -59,12 +106,17 @@ def sjekkerOrd(ord):
     return True, ""  #Returnerer at ordet er gyldig yippieeeeee
 
 
+file_history = []  #for å lagre de siste filene som ble åpent (max. 3)
+
+
 
 # Oppsett for GUI
 layout = [
     [sg.Text("Velg en fil:"), sg.Input(key="-FILE-"), sg.FileBrowse()],  #Input-felt og knapp for å velge fil
     [sg.Text("Skriv inn et ord:"), sg.Input(key="-WORD-")],  #Input-felt for å skrive inn et ord
     [sg.Button("Vis tekst"), sg.Button("Søk etter ord"), sg.Button("Finn linje"), sg.Button("Tell ord")],  #Knappene
+    [sg.Text("Filhistorikk (siste 3):")],
+    [sg.Listbox(values=[], size=(70, 3), key="-FILE_HISTORY-", enable_events=True)],
     [sg.Multiline(size=(70, 15), key="-OUTPUT-")]  #Tekstboks for å vise resultater
 ]
 
@@ -79,12 +131,33 @@ while True:
         break
     
     if event == "Vis tekst":
-        filnavn = values["-FILE-"]  #Henter filnavnet fra input-feltet
-        tekst = lesInnTekst(filnavn)  #Leser innholdet fra filen
-        if not tekst:
-            window["-OUTPUT-"].update("Filen ble ikke funnet eller er tom.")  #Viser feil hvis filen er tom
+        filnavn = values["-FILE-"]
+        if filnavn:
+            tekst = lesInnTekst(filnavn)
+            if not tekst:
+                window["-OUTPUT-"].update("Filen ble ikke funnet eller er tom.")
+            else:
+                window["-OUTPUT-"].update("".join(tekst))
+                
+                #Oppdaterer filene som vises
+                if filnavn not in file_history:
+                    file_history.insert(0, filnavn)
+                    if len(file_history) > 3:
+                        file_history.pop()  #Beholder bare de 3 sister filer
+                window["-FILE_HISTORY-"].update(file_history)
         else:
-            window["-OUTPUT-"].update("".join(tekst))  #Viser innholdet i tekstboksen
+            window["-OUTPUT-"].update("Ingen fil valgt.")
+
+
+    elif event == "-FILE_HISTORY-":  #Handle clicks on the file history
+        selected_file = values["-FILE_HISTORY-"][0] if values["-FILE_HISTORY-"] else None
+        if selected_file:
+            tekst = lesInnTekst(selected_file)
+            if not tekst:
+                window["-OUTPUT-"].update("Filen fra historikken ble ikke funnet eller er tom.")
+            else:
+                window["-OUTPUT-"].update("".join(tekst))
+                
             
     elif event == "Søk etter ord":
         ord = values["-WORD-"]  #Henter søkeordet fra input-feltet
