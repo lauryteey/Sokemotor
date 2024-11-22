@@ -125,7 +125,9 @@ window = sg.Window("Søkeprogram", layout)
 
 
 tekst = []  #Variabel for å lagre tekstinnholdet
-while True:
+
+
+while True: #Event loop owowowwow
     event, values = window.read()  #Leser hendelser og verdier fra GUI
     if event == sg.WINDOW_CLOSED:  #Lukker vinduet hvis "Avslutt" trykkes
         break
