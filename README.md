@@ -17,4 +17,4 @@ Funksjonalitet
 - Filhistorikk: Viser de siste tre filene som ble åpnet, slik at brukeren enkelt kan velge dem igjen.
 
 
-Det bruktes verktøy som W3Schools.com, geeksforgeeks.org og chatGPT.
+Det bruktes verktøy som W3Schools.com, geeksforgeeks.org og chatGPT for utvikling av programmet. 
