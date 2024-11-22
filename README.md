@@ -16,5 +16,27 @@ Funksjonalitet
 
 - Filhistorikk: Viser de siste tre filene som ble åpnet, slik at brukeren enkelt kan velge dem igjen.
 
+Det bruktes verktøy som W3Schools.com, geeksforgeeks.org og chatGPT for utvikling av programmet.
 
-Det bruktes verktøy som W3Schools.com, geeksforgeeks.org og chatGPT for utvikling av programmet. 
+Krav 
+
+- Python 3
+- PySimpleGUI-biblioteket
+
+Hvordan laste ned PySimpleGUI
+
+Åpne terminalen og kjør følgende kommando
+
+- pip install PySimpleGUI
+
+Dette vil laste ned og installere biblioteket automatisk. 
+
+Du kan sjekke at alt fungerer ved å åpne en Python-terminal og skrive:
+
+- import PySimpleGUI
+- print(PySimpleGUI.__version__)
+
+Hvis ingen feil oppstår, og versjonen vises, er installasjonen vellykket.
+
+
+ 
