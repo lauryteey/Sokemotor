@@ -36,7 +36,7 @@ Du kan sjekke at alt fungerer ved å åpne en Python-terminal og skrive:
 - import PySimpleGUI
 - print(PySimpleGUI.__version__)
 
-Hvis ingen feil oppstår, og versjonen vises, er installasjonen vellykket.
+Hvis ingen feil oppstår, og versjonen vises, er installasjonen klart.
 
 
  
