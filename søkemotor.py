@@ -103,7 +103,7 @@ def sjekkerOrd(ord):
         return False, "Ordet må være minst 3 bokstaver."  #Returnerer feil hvis ordet er for kort
     if ord.lower() in ekskluderte_ord:  #Sjekker om ordet er i listen over ekskluderte ord
         return False, "Bindeord kan ikke søkes etter."  #Returnerer feil hvis det er et bindeord
-    return True, ""  #Returnerer at ordet er gyldig yippieeeeee
+    return True, ""  #Returnerer at ordet er gyldig 
 
 
 file_history = []  #for å lagre de siste filene som ble åpent (max. 3)
@@ -120,7 +120,7 @@ layout = [
     [sg.Multiline(size=(70, 15), key="-OUTPUT-")]  #Tekstboks for å vise resultater
 ]
 
-# Opprettelse av vindu
+#Opprettelse av vindu
 window = sg.Window("Søkeprogram", layout)
 
 
@@ -189,4 +189,4 @@ while True: #Event loop owowowwow
             antall = tellOrd(ord)  #Bruker tellOrd-funksjonen
             window["-OUTPUT-"].update(antall)  #Viser antall i tekstboksen
 
-window.close()  #Lukker vinduet (baby bye bye byee)
+window.close()  #Lukker vinduet 
